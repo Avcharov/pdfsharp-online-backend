@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\buildMultiTargeting\pdfsharp-online-backend.props" />
-</Project>
