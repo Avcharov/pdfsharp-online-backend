@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using pdfsharp_online_backend.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/image")]
 [ApiController]
 public class ImageItemsController : ControllerBase
 {
@@ -12,18 +12,18 @@ public class ImageItemsController : ControllerBase
         _imageItemService = imageItemService;
     }
 
-    // GET: api/ImageItems
+   // [Authorize]
     [HttpGet]
-    public ActionResult<IEnumerable<ImageItem>> GetImageItems()
+    public async Task<ActionResult<IEnumerable<ImageItem>>> GetImageItems([FromQuery] long projectId)
     {
-        return Ok(_imageItemService.GetAll());
+        return Ok(await _imageItemService.GetImagesByProjectId(projectId));
     }
 
     // GET: api/ImageItems/5
     [HttpGet("{id}")]
-    public ActionResult<ImageItem> GetImageItem(int id)
+    public async Task<ActionResult<ImageItem>> GetImageItem(long id)
     {
-        var imageItem = _imageItemService.GetById(id);
+        var imageItem = await _imageItemService.GetImageById(id);
 
         if (imageItem == null)
         {
@@ -35,38 +35,34 @@ public class ImageItemsController : ControllerBase
 
     // POST: api/ImageItems
     [HttpPost]
-    public ActionResult<ImageItem> PostImageItem(ImageItem imageItem)
+    public async Task<ActionResult<ImageItem>> PostImageItem(ImageItem imageItem)
     {
-        _imageItemService.Create(imageItem);
+        await _imageItemService.AddImage(imageItem);
         return CreatedAtAction(nameof(GetImageItem), new { id = imageItem.Id }, imageItem);
     }
 
     // PUT: api/ImageItems/5
-    [HttpPut("{id}")]
-    public IActionResult PutImageItem(int id, ImageItem imageItem)
+    [HttpPut]
+    public async Task<ActionResult<IEnumerable<ImageItem>>> PutImageItem(IEnumerable<ImageItem> imageItems)
     {
-        if (id != imageItem.Id)
-        {
-            return BadRequest();
-        }
+        await _imageItemService.Update(imageItems);
 
-        if (!_imageItemService.Update(imageItem))
-        {
-            return NotFound();
-        }
-
-        return NoContent();
+        return Ok(imageItems);
     }
 
     // DELETE: api/ImageItems/5
     [HttpDelete("{id}")]
-    public IActionResult DeleteImageItem(int id)
+    public async Task<IActionResult> DeleteImageItem(int id)
     {
-        if (!_imageItemService.Delete(id))
+        var imageItem = await _imageItemService.GetImageById(id);
+
+        if (imageItem == null)
         {
             return NotFound();
         }
 
-        return NoContent();
+        await _imageItemService.Delete(id);
+
+        return Ok(imageItem);
     }
 }

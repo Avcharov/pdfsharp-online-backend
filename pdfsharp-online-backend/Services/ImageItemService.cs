@@ -1,63 +1,86 @@
-﻿using pdfsharp_online_backend.Domain;
+﻿using Microsoft.Extensions.Configuration;
+using pdfsharp_online_backend.Domain;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace pdfsharp_online_backend.Services
 {
     public class ImageItemService : IImageItemService
     {
-        private readonly List<ImageItem> _imageItems = new List<ImageItem>();
+        private readonly IConfiguration _configuration;
+        private readonly AppDbContext _context;
 
-        public IEnumerable<ImageItem> GetAll()
+        public ImageItemService(IConfiguration configuration, AppDbContext context)
         {
-            return _imageItems;
+            _configuration = configuration;
+            _context = context;
         }
 
-        public ImageItem GetById(int id)
+        public async Task<ImageItem> GetImageById(long id)
         {
-            return _imageItems.FirstOrDefault(i => i.Id == id);
+            return await _context.ImageItems.AsNoTracking().FirstOrDefaultAsync(i => i.Id == id);
         }
 
-        public void Create(ImageItem imageItem)
+        public async Task<IEnumerable<ImageItem>> GetImagesByProjectId(long projectId)
         {
+            return await _context.ImageItems.AsNoTracking().Where(i => i.ViewId == projectId).ToListAsync();
+        }
+
+        public async Task<ImageItem> AddImage(ImageItem imageItem)
+        {
+            imageItem.Id = 0;
             // In a real application, you would also handle ID assignment and validation
-            _imageItems.Add(imageItem);
+            await _context.ImageItems.AddAsync(imageItem);
+            await _context.SaveChangesAsync();
+
+            return imageItem;
         }
 
-        public bool Update(ImageItem imageItem)
+        public async Task<IEnumerable<ImageItem>> Update(IEnumerable<ImageItem> imageItems)
         {
-            var existingItem = GetById(imageItem.Id);
-            if (existingItem == null)
+
+            foreach (var imageItem in imageItems)
             {
-                return false;
+                var existingItem = await GetImageById(imageItem.Id);
+                if (existingItem == null)
+                {
+                    throw new ValidationException("Given Image has is empty.");
+                }
+
+                // Update properties of the existing item
+                existingItem.Name = imageItem.Name;
+                existingItem.XPos = imageItem.XPos;
+                existingItem.YPos = imageItem.YPos;
+                existingItem.Rotation = imageItem.Rotation;
+                existingItem.ViewId = imageItem.ViewId;
+                existingItem.Opacity = imageItem.Opacity;
+                existingItem.ImageWidth = imageItem.ImageWidth;
+                existingItem.ImageHeight = imageItem.ImageHeight;
+                existingItem.ImageRight = imageItem.ImageRight;
+                existingItem.ImageBottom = imageItem.ImageBottom;
+                existingItem.ImageUrl = imageItem.ImageUrl;
+                existingItem.ImageData = imageItem.ImageData;
+                existingItem.PdfPage = imageItem.PdfPage;
+
+                _context.ImageItems.Update(existingItem);
             }
 
-            // Update properties of the existing item
-            existingItem.Name = imageItem.Name;
-            existingItem.XPos = imageItem.XPos;
-            existingItem.YPos = imageItem.YPos;
-            existingItem.Rotation = imageItem.Rotation;
-            existingItem.ViewId = imageItem.ViewId;
-            existingItem.Opacity = imageItem.Opacity;
-            existingItem.ImageWidth = imageItem.ImageWidth;
-            existingItem.ImageHeight = imageItem.ImageHeight;
-            existingItem.ImageRight = imageItem.ImageRight;
-            existingItem.ImageBottom = imageItem.ImageBottom;
-            existingItem.ImageUrl = imageItem.ImageUrl; // Or ImageData, depending on your design
-            existingItem.ImageName = imageItem.ImageName;
-            existingItem.PdfPage = imageItem.PdfPage;
+            await _context.SaveChangesAsync();
 
-            return true;
+            return imageItems;
         }
 
-        public bool Delete(int id)
+        public async Task<ImageItem> Delete(long id)
         {
-            var item = GetById(id);
+            var item = await GetImageById(id);
             if (item == null)
             {
-                return false;
+                throw new ValidationException("Given Image Id not found.");
             }
 
-            _imageItems.Remove(item);
-            return true;
+            _context.ImageItems.Remove(item);
+            await _context.SaveChangesAsync();
+
+            return item;
         }
     }
 

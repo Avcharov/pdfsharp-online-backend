@@ -30,6 +30,9 @@ namespace pdfsharp_online_backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
+                    b.Property<string>("Base64AttachmentCode")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
@@ -54,11 +57,11 @@ namespace pdfsharp_online_backend.Migrations
                     b.Property<int>("ImageBottom")
                         .HasColumnType("int");
 
+                    b.Property<string>("ImageData")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("ImageHeight")
                         .HasColumnType("int");
-
-                    b.Property<string>("ImageName")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ImageRight")
                         .HasColumnType("int");

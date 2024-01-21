@@ -6,7 +6,6 @@ namespace pdfsharp_online_backend.Services
 {
     public class EmailService : IEmailService
     {
-        private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
         public EmailService(IConfiguration configuration)
         {

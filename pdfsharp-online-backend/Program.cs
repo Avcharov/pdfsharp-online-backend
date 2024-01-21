@@ -20,6 +20,8 @@ builder.Services
        });
 
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IImageItemService, ImageItemService>();
+builder.Services.AddScoped<IPdfService, PdfService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
