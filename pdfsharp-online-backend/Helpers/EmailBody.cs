@@ -11,8 +11,6 @@
             </head>
             <body>
                 <h1>Reset your password</h1>
-                <h1>Я люблю Сашу</h1>
-                <h1>I love Sasha!</h1>
                 <a href=""http://localhost:4200/reset?email={email}&code={emailToken}""> Reset Password </a>
             </body>
             </html>
